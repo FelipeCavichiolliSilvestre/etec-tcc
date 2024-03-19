@@ -1,0 +1,490 @@
+openapi: 3.1.0
+x-stoplight:
+  id: 2xn4nlrj6u1ls
+info:
+  title: TCC
+  version: '1.0'
+servers:
+  - url: 'http://localhost:4005'
+paths:
+  /users:
+    get:
+      summary: Get many Users.
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+      operationId: get-users
+      parameters:
+        - schema:
+            type: integer
+          in: query
+          name: page
+        - schema:
+            type: integer
+          in: query
+          name: limit
+        - schema:
+            type: string
+          in: query
+          name: role
+    post:
+      summary: Create User
+      operationId: post-users
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                role:
+                  $ref: '#/components/schemas/RoleEnum'
+              required:
+                - name
+                - email
+  /users/login:
+    post:
+      summary: Login
+      operationId: post-users-login
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/User'
+                  - type: object
+                    properties:
+                      jwt:
+                        type: string
+                    required:
+                      - jwt
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                password:
+                  type: string
+              required:
+                - login
+                - password
+      security: []
+  /users/me:
+    get:
+      summary: Get logged User.
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      operationId: get-users-me
+  '/users/{userId}':
+    parameters:
+      - schema:
+          type: integer
+        name: userId
+        in: path
+        required: true
+    get:
+      summary: Get one User.
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      operationId: get-users-userId
+    patch:
+      summary: Update one User.
+      operationId: patch-users-userId
+      responses:
+        '204':
+          description: No Content
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                role:
+                  $ref: '#/components/schemas/RoleEnum'
+    delete:
+      summary: Remove a User.
+      operationId: delete-users-userId
+      responses:
+        '204':
+          description: No Content
+  /deadlines:
+    get:
+      summary: Get many Deadlines.
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Deadline'
+      operationId: get-deadlines
+      parameters:
+        - schema:
+            type: integer
+          in: query
+          name: page
+        - schema:
+            type: integer
+          in: query
+          name: limit
+    post:
+      summary: Create a Deadline.
+      operationId: post-deadlines
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deadline'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromDate:
+                  type: string
+                  format: date-time
+                toDate:
+                  type: string
+                  format: date-time
+              required:
+                - fromDate
+                - toDate
+        description: ''
+  '/deadlines/{deadlineId}':
+    parameters:
+      - schema:
+          type: integer
+        name: deadlineId
+        in: path
+        required: true
+    get:
+      summary: Get status of a Deadline.
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Deadline'
+                  - type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+                          required:
+                            - id
+                            - name
+                    required:
+                      - users
+              examples: {}
+      operationId: get-deadlines-deadlineId
+    patch:
+      summary: Update a Deadline.
+      operationId: patch-deadlines-deadlineId
+      responses:
+        '204':
+          description: No Content
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromDate:
+                  type: string
+                  format: date-time
+                toDate:
+                  type: string
+                  format: date-time
+    delete:
+      summary: Delete a Deadline.
+      operationId: delete-deadlines-deadlineId
+      responses:
+        '204':
+          description: No Content
+  /schedules:
+    get:
+      summary: Export schedules.
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/xml:
+              schema:
+                type: string
+              examples: {}
+      operationId: get-schedules
+      parameters:
+        - schema:
+            type: string
+            format: date-time
+          in: query
+          name: startDate
+        - schema:
+            type: string
+            format: date-time
+          in: query
+          name: endDate
+        - schema:
+            type: array
+          in: query
+          name: userIds
+  '/users/{userId}/schedules':
+    parameters:
+      - schema:
+          type: string
+        name: userId
+        in: path
+        required: true
+    get:
+      summary: Get latest schedule of user.
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schedule'
+      operationId: get-users-userId-schedules
+    post:
+      summary: Register professor Schedule.
+      operationId: post-users-userId-schedules
+      responses:
+        '200':
+          description: OK
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  lesson:
+                    type: integer
+                    minimum: 0
+                  dayOfWeek:
+                    type: integer
+                    minimum: 0
+                  available:
+                    type: boolean
+                    default: true
+                required:
+                  - lesson
+                  - dayOfWeek
+                  - available
+  /users/search:
+    get:
+      summary: Search Users.
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+      operationId: get-users-search
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: term
+  '/users/{userId}/password':
+    parameters:
+      - schema:
+          type: string
+        name: userId
+        in: path
+        required: true
+    put:
+      summary: Update password.
+      operationId: put-users-userId-password
+      responses:
+        '200':
+          $ref: '#/components/responses/LoginResponse'
+        '404':
+          description: Not Found
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  minLength: 16
+                  maxLength: 16
+                password:
+                  type: string
+                  minLength: 6
+              required:
+                - code
+                - password
+  '/users{userId}/password-reset':
+    parameters:
+      - schema:
+          type: string
+        name: userId
+        in: path
+        required: true
+    post:
+      summary: Reset password.
+      operationId: post-users-userId-password-reset
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+components:
+  schemas:
+    User:
+      title: User
+      type: object
+      description: ''
+      examples:
+        - id: 142
+          firstName: Alice
+          lastName: Smith
+          email: alice.smith@gmail.com
+          dateOfBirth: '1997-10-31'
+          emailVerified: true
+          signUpDate: '2019-08-24'
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the given user.
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+        - id
+        - name
+        - email
+        - role
+    RoleEnum:
+      type: string
+      title: RoleEnum
+      x-stoplight:
+        id: tzsjqkkz4gkq1
+      enum:
+        - PROFESSOR
+        - ADMIN
+    Deadline:
+      title: Deadline
+      x-stoplight:
+        id: 6e876t1094amn
+      type: object
+      properties:
+        id:
+          type: integer
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+      required:
+        - id
+        - fromDate
+        - toDate
+    Schedule:
+      title: Schedule
+      x-stoplight:
+        id: d1zpivnwfhc84
+      type: object
+      properties:
+        available:
+          type: boolean
+        lesson:
+          type: integer
+        dayOfWeek:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - available
+        - lesson
+        - dayOfWeek
+        - createdAt
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+  responses:
+    LoginResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            allOf:
+              - type: object
+                properties:
+                  jwt:
+                    type: string
+              - $ref: '#/components/schemas/User'
+security:
+  - Bearer: []
